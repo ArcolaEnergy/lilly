@@ -1,3 +1,9 @@
+**This version is not currently maintained by Arcola Energy, but 
+development is being continued by 
+[Christian Jaeger](http://christianjaeger.ch/), using 
+[this](https://github.com/pflanze/lily) repository. Please send pull 
+requests etc there.**
+
 # Lily - Little Lisp system for Qt
 
 This is an (as of yet unfinished, see status) implementation of the
