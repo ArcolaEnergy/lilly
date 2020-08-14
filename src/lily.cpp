@@ -890,10 +890,10 @@ static
 LilyObjectPtr
 alistMaybeRef (LilyListPtr l, LilyObjectPtr key) {
 	while (! l->isNull()) {
-		LETU_AS(p, LilyPair, l->first());
+		LETU_AS(p, LilyPair, l->first()); // safe as l is a LilyListPtr
 		if (p->car() == key)
 			return p->cdr();
-		l= l->rest();
+		l= l->rest(); // throws exception if improper list
 	}
 	return NULL;
 }
@@ -903,10 +903,8 @@ LilyObjectPtr
 lily::apply1ary(const char* procname,
 		std::function<LilyObjectPtr(LilyObjectPtr)> proc,
 		LilyListPtr* vs) {
-	LETU_AS(vs0, LilyPair, *vs);
-	if (vs0) {
-		LETU_AS(vs1, LilyNull, vs0->cdr());
-		if (vs1) {
+	IF_LETU_AS(vs0, LilyPair, *vs) {
+		IF_LETU_AS(vs1, LilyNull, vs0->cdr()) {
 			return proc(vs0->car());
 		}
 	}
@@ -929,7 +927,7 @@ lily::eval(LilyObjectPtr code,
 			throw std::logic_error("empty call");
 			break;
 		case LilyEvalOpcode::Pair: {
-			LETU_AS(p, LilyPair, code);
+			LETU_AS(p, LilyPair, code); // safe as just checked opcode
 			// Function, macro or evaluator (base syntax)
 			// application; the type of the head element
 			// determines which kind. Currently, given
@@ -999,16 +997,15 @@ lily::eval(LilyObjectPtr code,
 			// arguments are used hence different
 			// continuation created.
 
-			LET_AS(frame, LilyContinuationFrame, cont->first());
+			XLET_AS(frame, LilyContinuationFrame, cont->first());
 			cont= cont->rest();
 			bool accIsHead= ! frame->maybeHead();
 			if (accIsHead) {
 				// acc contains the evaluated
-				// head. Now we know whether it is a
-				// function, macro or evaluator
+				// head. Now we can check whether it
+				// is a function, macro or evaluator
 				// application.
-				LET_AS(evaluator, LilyNativeEvaluator, acc);
-				if (evaluator) {
+				IF_LET_AS(evaluator, LilyNativeEvaluator, acc) {
 					auto expressions= frame->expressions();
 					acc= evaluator->_eval
 						(&expressions, &ctx, &cont);
@@ -1018,8 +1015,7 @@ lily::eval(LilyObjectPtr code,
 					// pass acc to cont
 					goto next_cont;
 				}
-				LET_AS(expander, LilyMacroexpander, acc);
-				if (expander) {
+				IF_LET_AS(expander, LilyMacroexpander, acc) {
 					auto expressions= frame->expressions();
 					// XX missing a reference to
 					// the original surrounding
@@ -1034,7 +1030,7 @@ lily::eval(LilyObjectPtr code,
 			}
 			// pass_to_cont:
 			LilyObjectPtr head= accIsHead ? acc : frame->maybeHead();
-			LET_AS(expressions, LilyList, frame->expressions());
+			XLET_AS(expressions, LilyList, frame->expressions());
 			auto rvalues= accIsHead ? frame->rvalues()
 				: CONS(acc, frame->rvalues());
 			if (expressions->isNull()) {
@@ -1085,8 +1081,7 @@ LilyListPtr lily::reverse(LilyObjectPtr l) {
 
 bool lily::isList(LilyObjectPtr v) {
 	while (true) {
-		LETU_AS(vp, LilyPair, v);
-		if (vp)
+		IF_LETU_AS(vp, LilyPair, v)
 			v= vp->cdr();
 		else if (UNWRAP_AS(LilyNull, v))
 			return true;
@@ -1105,8 +1100,7 @@ LilyObjectPtr lily::fold_right(
 	std::function<LilyObjectPtr(LilyObjectPtr)> rec=
 		[&](LilyObjectPtr v) -> LilyObjectPtr {
 
-		LETU_AS(vp, LilyPair, v);
-		if (vp) {
+		IF_LETU_AS(vp, LilyPair, v) {
 			return fn(vp->car(),
 				  rec(vp->cdr()));
 		} else if (UNWRAP_AS(LilyNull, v)) {
@@ -1126,8 +1120,7 @@ LilyObjectPtr lily::improper_fold_right(
 	std::function<LilyObjectPtr(LilyObjectPtr)> rec=
 		[&](LilyObjectPtr v) -> LilyObjectPtr {
 
-		LETU_AS(vp, LilyPair, v);
-		if (vp) {
+		IF_LETU_AS(vp, LilyPair, v) {
 			return fn(vp->car(),
 				  rec(vp->cdr()));
 		} else if (UNWRAP_AS(LilyNull, v)) {
@@ -1162,7 +1155,7 @@ LilyObjectPtr lily::improper_to_proper_map(
 		}, NIL, v);
 }
 
-// Cut off learing "Lily" from type names; does not handle unicode
+// Cut off leading "Lily" from type names; does not handle unicode
 // since there's no unicode used in those. XX will become obsolete
 // once using namespaces.
 static

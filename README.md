@@ -27,7 +27,7 @@ thread should the need arise). Event handlers running as Scheme code
 in Lily will thus not lead to UI jitter.
 
 For more complex or computation intensive operations, the code in the
-UI thread (Lily program or C++ via tha Lily library) will communicate
+UI thread (Lily program or C++ via the Lily library) will communicate
 with the main system. This model is similar to the approach taken in
 single-page web applications: the "main system" in this case is the
 server side (backend), whereas the "Lily program" corresponds to the
@@ -60,13 +60,21 @@ author also needed to get experience in creating a Scheme interpreter
 for other contexts. And he expects to get better debugging features
 out of Lily in due course than out of a JavaScript interpreter.
 
+## Features
+
+* first-class lexical environments in some manner (run programs in an
+  environment that is tailored to what the programs should be allowed
+  to do)
+* tail-call optimization and first-class continuations
+* exact integers and rationals (fixed 64 bit / 2*64 bit
+  representations), doubles
+
 ## Goals
 
 * easy to understand and maintain implementation
 * low latency
-* first-class lexical environments in some manner (run programs in an
-  environment that is tailored to what the programs should be allowed
-  to do)
+* macro expander library
+* small (fit anywhere?)
 
 ## Non-goals
 
@@ -76,6 +84,7 @@ out of Lily in due course than out of a JavaScript interpreter.
   possibly, with type annotations, to statically typed code), that
   should speed up things quite a lot and should make libraries in
   Scheme feasible)
+* imaginary numbers, bignums
 
 ## Status
 
@@ -86,6 +95,12 @@ out of Lily in due course than out of a JavaScript interpreter.
 
 - See [TODO](TODO.md).
 
+- The evaluation model (with explicit continuation handling) seems
+  applied messily and needs work. (How does a native procedure
+  suspend? Do multiple steps? Wrong API currently.)
+  
+  Possibly this will be worked out first in
+  [Ruly](https://github.com/pflanze/ruly.git).
 
 ## Requirements
 

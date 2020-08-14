@@ -896,6 +896,7 @@ public:
 #define LIST_UNWRAP(e) UNWRAP_AS(LilyList,e)
 // let unwrapped (or "unsafe")
 #define LETU_AS(var, t, e) t* var= UNWRAP_AS(t, e)
+#define IF_LETU_AS(var, t, e) t* var= UNWRAP_AS(t, e); if (var) 
 //#define LETU(var, e) LETU_AS(var, LilyObject, e)
 
 
@@ -903,6 +904,7 @@ void throwTypeError(const char* tname, LilyObjectPtr v) noreturn;
 
 // casting without unwrapping
 #define LET_AS(var, t, e) auto var= std::dynamic_pointer_cast<t>(e)
+#define IF_LET_AS(var, t, e) auto var= std::dynamic_pointer_cast<t>(e); if (var)
 
 template <typename T>
 std::shared_ptr<T> XAS(LilyObjectPtr v) {
@@ -910,7 +912,7 @@ std::shared_ptr<T> XAS(LilyObjectPtr v) {
 	if (!res) throwTypeError(typeid(T).name(), v);
 	return res;
 }
-//#define XLET_AS(var, t, e) auto var= XAS<t>(e)
+#define XLET_AS(var, t, e) auto var= XAS<t>(e)
 
 
 
